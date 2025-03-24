@@ -1,4 +1,6 @@
 using CompanyAPI.Data;
+using CompanyAPI.Interfaces;
+using CompanyAPI.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +11,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
