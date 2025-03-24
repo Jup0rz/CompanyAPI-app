@@ -1,31 +1,77 @@
 ﻿using CompanyAPI.Entities;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
+using CompanyAPI.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyAPI.Controllers
 {
-    //https://localhost:7070 / api / Company / 
     [Route("api/[controller]")]
     [ApiController]
     public class CompanyController : ControllerBase
     {
-        [HttpGet]
+        private readonly ICompanyRepository _companyRepository;
+
+        public CompanyController(ICompanyRepository companyRepository)
+        {
+            _companyRepository = companyRepository;
+        }
+
+        [HttpGet("list")]
         public async Task<ActionResult<List<Company>>> GetAll()
         {
-            var companies = new List<Company> {
-            new Company
-            {
-                Id = 1,
-                Name = "Test",
-                StockTicker = "T1",
-                Exchange = "USD",
-                Isin = "US123",
-                WebsiteUrl = "",
-            }
-            };
-
+            var companies = await _companyRepository.GetAllAsync();
             return Ok(companies);
+        }
+
+        [HttpGet("id/{id}")]
+        public async Task<ActionResult<Company>> GetByIdA(int id)
+        {
+            var company = await _companyRepository.GetByIdAsync(id);
+
+            if (company is null)
+                return BadRequest("Id given for company not found.");
+
+            return Ok(company);
+        }
+
+        [HttpGet("isin/{isin}")]
+        public async Task<ActionResult<Company>> GetByIsin(string isin)
+        {
+            var company = await _companyRepository.GetByIsinAsync(isin);
+
+            if (company is null)
+                return BadRequest("Isin given for company not found.");
+
+            return Ok(company);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> CreateCompany(Company company)
+        {
+            try
+            {
+                await _companyRepository.CreateAsync(company);
+
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest("Error creating company.");
+            }
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> UpdateCompany(Company company)
+        {
+            try
+            {
+                await _companyRepository.UpdateAsync(company);
+
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest("Error updating company.");
+            }
         }
     }
 }
