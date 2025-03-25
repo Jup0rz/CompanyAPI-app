@@ -10,6 +10,7 @@ namespace CompanyAPI.Interfaces
         Task<Company> GetByIsinAsync(string isin);
         Task<ActionResult> CreateAsync(Company company);
         Task<ActionResult> UpdateAsync(Company company);
+        Task<ActionResult> DeleteAsync(int id);
         Task<bool> IsIsinUnique(string isin, int id);
     }
 }

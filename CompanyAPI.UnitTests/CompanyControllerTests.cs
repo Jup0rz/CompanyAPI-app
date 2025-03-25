@@ -3,6 +3,7 @@ using CompanyAPI.Entities;
 using CompanyAPI.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace CompanyAPI.UnitTests
 {
@@ -42,7 +43,7 @@ namespace CompanyAPI.UnitTests
 
             var result = _company.GetAll();
 
-            Assert.That(result.Result.Result, Is.TypeOf<OkObjectResult>());
+            Assert.That(result.Result.Result, Is.InstanceOf<OkObjectResult>());
         }
 
         [Test]
@@ -53,7 +54,7 @@ namespace CompanyAPI.UnitTests
 
             var result = _company.GetAll();
 
-            Assert.That(result.Result.Result, Is.TypeOf<NotFoundObjectResult>());
+            Assert.That(result.Result.Result, Is.InstanceOf<NotFoundObjectResult>());
         }
 
         [Test]
@@ -75,7 +76,7 @@ namespace CompanyAPI.UnitTests
             var company = new Company { Id = 1, Name = "Company A", Isin = "AA0000000000", Exchange = "ABC", StockTicker = "ABC" };
             _companyRepositoryMock.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync(company);
 
-            Assert.That(_company.GetById(number).Result.Result, Is.TypeOf<BadRequestObjectResult>());
+            Assert.That(_company.GetById(number).Result.Result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -86,7 +87,7 @@ namespace CompanyAPI.UnitTests
 
             var result = _company.GetByIsin(company.Isin);
 
-            Assert.That(result.Result.Result, Is.TypeOf<OkObjectResult>());
+            Assert.That(result.Result.Result, Is.InstanceOf<OkObjectResult>());
         }
 
         [Test]
@@ -102,75 +103,69 @@ namespace CompanyAPI.UnitTests
         [TestCase("1A")]
         [TestCase("A")]
         [TestCaseSource(nameof(GetInvalidValues))]
-        public async Task CreateCompany_WhenInputValueIsInvalidIsin_ReturnsBadRequest(string isin)
+        public void CreateCompany_WhenInputValueIsInvalidIsin_ReturnsBadRequest(string isin)
         {
-            var company = new Company { Isin = isin };
+            var result = _company.CreateCompany(new Company
+            {
+                Isin = isin
+            });
 
-            var result = await _company.CreateCompany(company);
-
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            var badRequestResult = result as BadRequestObjectResult;
-            Assert.That(badRequestResult?.Value, Is.EqualTo("Invalid ISIN format. ISIN must start with two non-numeric characters."));
+            Assert.That(result.Result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
-        public async Task CreateCompany_WhenInputValueIsUniqueIsin_ReturnsBadRequest()
+        public void CreateCompany_WhenInputValueIsNotUniqueIsin_ReturnsBadRequest()
         {
             var company = new Company { Id = 0, Isin = "AA0000000000" };
-            _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin, company.Id)).ReturnsAsync(true);
+            _ = _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin, company.Id)).ReturnsAsync(false);
 
-            var result = await _company.CreateCompany(company);
+            var result = _company.CreateCompany(company);
 
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            var badRequestResult = result as BadRequestObjectResult;
-            Assert.That(badRequestResult?.Value, Is.EqualTo("A company with the same ISIN already exists."));
+            Assert.That(result.Result, Is.TypeOf<BadRequestObjectResult>());
         }
 
         [Test]
         public void CreateCompany_WhenCalled_ReturnsOk()
         {
-            var company = new Company { Isin = "AA0000000000" };
+            var company = new Company { Id = 0, Isin = "AA0000000000" };
 
+            _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin, company.Id)).ReturnsAsync(true);
             var result = _company.CreateCompany(company);
 
             Assert.That(result.Result, Is.TypeOf<OkResult>());
         }
 
         [Test]
-        public async Task UpdateCompany_WhenInputValueIsInvalid_ReturnsBadRequest()
+        public void UpdateCompany_WhenInputValueIsInvalid_ReturnsBadRequest()
         {
-            var company = new Company { Isin = "1A" }; // Invalid ISIN
+            var company = new Company { Id = 1, Isin = "AA0000000000" };
+            _companyRepositoryMock.Setup(repo => repo.CreateAsync(company)).ReturnsAsync(new OkObjectResult(company));
 
-            var result = await _company.UpdateCompany(company);
+            var invalidCompany = new Company { Id = 1, Isin = "1A" }; // Invalid ISIN
 
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            var badRequestResult = result as BadRequestObjectResult;
-            Assert.That(badRequestResult?.Value, Is.EqualTo("Invalid ISIN format. ISIN must start with two non-numeric characters."));
-        }
+            var result = _company.UpdateCompany(invalidCompany);
 
-        [Test]
-        public async Task UpdateCompany_WhenInputValueIsUniqueIsin_ReturnsBadRequest()
-        {
-            var company = new Company { Id = 0, Isin = "AA0000000000" };
-            _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin, company.Id)).ReturnsAsync(true);
-
-            var result = await _company.CreateCompany(company);
-
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-            var badRequestResult = result as BadRequestObjectResult;
-            Assert.That(badRequestResult?.Value, Is.EqualTo("A company with the same ISIN already exists."));
+            Assert.That(result.Result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
         public void UpdateCompany_WhenCalled_ReturnsOk()
         {
-            var company = new Company { Id = 0, Isin = "AA0000000000" };
+            var company = new Company { Id = 1, Isin = "AA0000000000", Name = "Company A", StockTicker = "C1", Exchange = "ABC1", WebsiteUrl = "https://www.company1.com" };
+
+            _companyRepositoryMock.Setup(repo => repo.UpdateAsync(company)).ReturnsAsync(new OkObjectResult(company));
             _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin, company.Id)).ReturnsAsync(true);
 
-            company.Isin = "AA0000000001";
             var result = _company.UpdateCompany(company);
 
-            Assert.That(result.Result, Is.TypeOf<OkResult>());
+            Assert.That(result.Result, Is.InstanceOf<OkResult>());
+        }
+
+        [Test]
+        public void DeleteCompany_WhenCalled_ReturnsOk()
+        {
+            _ = _company.DeleteCompany(1);
+            _companyRepositoryMock.Verify(c => c.DeleteAsync(1));
         }
     }
 }

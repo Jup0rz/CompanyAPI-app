@@ -20,7 +20,7 @@ export function NewCompany(){
 
     const inputChangeValue = (event : ChangeEvent<HTMLInputElement>) => {
         const inputName = event.target.name;
-        const inputValue = event.target.value;
+        const inputValue = event.target.value === '' ? null : event.target.value;
 
         setCompany({...company, [inputName] : inputValue})
     }
@@ -51,7 +51,7 @@ export function NewCompany(){
 
 
     return(
-        <Container className="mt5">
+        <Container className="mt-5">
             <Row>
                 <Col sm={{size:8, offset:2}}>
                 <h4>New Company</h4>
@@ -75,7 +75,7 @@ export function NewCompany(){
                 </FormGroup>
                 <FormGroup>
                     <Label>WebSite</Label>
-                    <Input type="url" name="websiteurl" onChange={inputChangeValue} value={company?.websiteurl || ""}/>
+                    <Input type="text" name="websiteurl" onChange={inputChangeValue} value={company?.websiteurl?.toString()}/>
                 </FormGroup>
                 </Form>
                 <Button color="primary" className="me-4" onClick={saveCompany}>Save</Button>

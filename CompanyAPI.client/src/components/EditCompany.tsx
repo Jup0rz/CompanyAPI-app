@@ -33,7 +33,7 @@ export function EditCompany(){
 
     const inputChangeValue = (event : ChangeEvent<HTMLInputElement>) => {
         const inputName = event.target.name;
-        const inputValue = event.target.value;
+        const inputValue = event.target.value === '' ? null : event.target.value;
 
         setCompany({...company, [inputName] : inputValue})
     }
@@ -87,7 +87,7 @@ export function EditCompany(){
                 </FormGroup>
                 <FormGroup>
                     <Label>WebSite</Label>
-                    <Input type="url" name="websiteurl" onChange={inputChangeValue} value={company?.websiteurl || ""}/>
+                    <Input type="text" name="websiteurl" onChange={inputChangeValue} value={company?.websiteurl?.toString()}/>
                 </FormGroup>
                 </Form>
                 <Button color="primary" className="me-4" onClick={updateCompany}>Save</Button>

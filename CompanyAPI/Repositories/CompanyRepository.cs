@@ -52,6 +52,21 @@ namespace CompanyAPI.Repositories
             return new OkResult();
         }
 
+        public async Task<ActionResult> DeleteAsync(int id)
+        {
+            var company = await _dataContext.Companies.FirstOrDefaultAsync(c => c.Id == id);
+            if (company == null)
+            {
+                return new NotFoundResult();
+            }
+
+            _dataContext.Companies.Remove(company);
+
+            await _dataContext.SaveChangesAsync();
+
+            return new OkResult();
+        }
+
         public async Task<bool> IsIsinUnique(string isin, int id)
         {
             return !await _dataContext.Companies.AnyAsync(c => c.Isin == isin && c.Id != id);
