@@ -1,6 +1,13 @@
-# Project Overview
+## Project Overview
 
-This project contains a basic C# .NET Core 8 RESTful API, designed using the **Code First** methodology. There is no need to provide external scripts for the database, as all data records are included in the migration files. The web client is built using **React** (latest version), ensuring a modern and efficient front-end experience.
+This project contains a basic **C# .NET Core 8 RESTful API**, designed using the **Code First** methodology. 
+
+There is **no need to provide external scripts** for the database, as all data records are included in the migration files. Unit tests are written using **NUnit** and cover **all methods** in the controller.
+
+The web client is built using **React** (latest version), ensuring a modern and efficient front-end experience.
+
+### Future Work
+- **TODO:** In the future, the goal is to extract the **Entity Framework** (EF) from the API and create a separate project dedicated solely to the database operations.
 
 To get everything up and running smoothly, please follow the steps below to properly configure the front-end:
 
