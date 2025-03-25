@@ -52,9 +52,9 @@ namespace CompanyAPI.Repositories
             return new OkResult();
         }
 
-        public async Task<bool> IsIsinUnique(string isin)
+        public async Task<bool> IsIsinUnique(string isin, int id)
         {
-            return !await _dataContext.Companies.AnyAsync(c => c.Isin == isin);
+            return !await _dataContext.Companies.AnyAsync(c => c.Isin == isin && c.Id != id);
         }
     }
 }

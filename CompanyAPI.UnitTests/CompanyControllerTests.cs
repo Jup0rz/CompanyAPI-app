@@ -116,8 +116,8 @@ namespace CompanyAPI.UnitTests
         [Test]
         public async Task CreateCompany_WhenInputValueIsUniqueIsin_ReturnsBadRequest()
         {
-            var company = new Company { Isin = "AA0000000000" };
-            _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin)).ReturnsAsync(true);
+            var company = new Company { Id = 0, Isin = "AA0000000000" };
+            _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin, company.Id)).ReturnsAsync(true);
 
             var result = await _company.CreateCompany(company);
 
@@ -151,8 +151,8 @@ namespace CompanyAPI.UnitTests
         [Test]
         public async Task UpdateCompany_WhenInputValueIsUniqueIsin_ReturnsBadRequest()
         {
-            var company = new Company { Isin = "AA0000000000" };
-            _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin)).ReturnsAsync(true);
+            var company = new Company { Id = 0, Isin = "AA0000000000" };
+            _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin, company.Id)).ReturnsAsync(true);
 
             var result = await _company.CreateCompany(company);
 
@@ -164,8 +164,8 @@ namespace CompanyAPI.UnitTests
         [Test]
         public void UpdateCompany_WhenCalled_ReturnsOk()
         {
-            var company = new Company { Isin = "AA0000000000" };
-            _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin)).ReturnsAsync(true);
+            var company = new Company { Id = 0, Isin = "AA0000000000" };
+            _companyRepositoryMock.Setup(repo => repo.IsIsinUnique(company.Isin, company.Id)).ReturnsAsync(true);
 
             company.Isin = "AA0000000001";
             var result = _company.UpdateCompany(company);

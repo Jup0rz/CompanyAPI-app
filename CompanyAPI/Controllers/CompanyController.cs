@@ -58,13 +58,13 @@ namespace CompanyAPI.Controllers
             return Ok(company);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<ActionResult> CreateCompany(Company company)
         {
-            if (string.IsNullOrWhiteSpace(company.Isin) || company.Isin.Length < 2 || !char.IsLetter(company.Isin[0]) || !char.IsLetter(company.Isin[1]))
+            if (!IsIsinValid(company.Isin))
                 return BadRequest("Invalid ISIN format. ISIN must start with two non-numeric characters.");
 
-            if (await _companyRepository.IsIsinUnique(company.Isin))
+            if (!IsIsinUnique(company.Isin, company.Id))
                 return BadRequest("A company with the same ISIN already exists.");
 
 
@@ -73,13 +73,13 @@ namespace CompanyAPI.Controllers
             return Ok();
         }
 
-        [HttpPut]
+        [HttpPut("update")]
         public async Task<ActionResult> UpdateCompany(Company company)
         {
             if (!IsIsinValid(company.Isin))
                 return BadRequest("Invalid ISIN format. ISIN must start with two non-numeric characters.");
 
-            if (!IsIsinUnique(company.Isin))
+            if (!IsIsinUnique(company.Isin, company.Id))
                 return BadRequest("A company with the same ISIN already exists.");
 
             await _companyRepository.UpdateAsync(company);
@@ -87,14 +87,14 @@ namespace CompanyAPI.Controllers
             return Ok();
         }
 
-        private bool IsIsinValid(string isin)
+        private static bool IsIsinValid(string isin)
         {
             return !string.IsNullOrWhiteSpace(isin) && isin.Length >= 2 && char.IsLetter(isin[0]) && char.IsLetter(isin[1]);
         }
 
-        private bool IsIsinUnique(string isin)
+        private bool IsIsinUnique(string isin, int id)
         {
-            return !_companyRepository.IsIsinUnique(isin).Result;
+            return _companyRepository.IsIsinUnique(isin, id).Result;
         }
     }
 }
