@@ -51,5 +51,10 @@ namespace CompanyAPI.Repositories
             await _dataContext.SaveChangesAsync();
             return new OkResult();
         }
+
+        public async Task<bool> IsIsinUnique(string isin)
+        {
+            return !await _dataContext.Companies.AnyAsync(c => c.Isin == isin);
+        }
     }
 }

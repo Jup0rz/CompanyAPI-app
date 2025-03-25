@@ -1,7 +1,6 @@
 ﻿using CompanyAPI.Entities;
 using CompanyAPI.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace CompanyAPI.Controllers
 {
@@ -62,31 +61,40 @@ namespace CompanyAPI.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateCompany(Company company)
         {
-            try
-            {
-                await _companyRepository.CreateAsync(company);
+            if (string.IsNullOrWhiteSpace(company.Isin) || company.Isin.Length < 2 || !char.IsLetter(company.Isin[0]) || !char.IsLetter(company.Isin[1]))
+                return BadRequest("Invalid ISIN format. ISIN must start with two non-numeric characters.");
 
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return BadRequest("Error creating company.");
-            }
+            if (await _companyRepository.IsIsinUnique(company.Isin))
+                return BadRequest("A company with the same ISIN already exists.");
+
+
+            await _companyRepository.CreateAsync(company);
+
+            return Ok();
         }
 
         [HttpPut]
         public async Task<ActionResult> UpdateCompany(Company company)
         {
-            try
-            {
-                await _companyRepository.UpdateAsync(company);
+            if (!IsIsinValid(company.Isin))
+                return BadRequest("Invalid ISIN format. ISIN must start with two non-numeric characters.");
 
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return BadRequest("Error updating company.");
-            }
+            if (!IsIsinUnique(company.Isin))
+                return BadRequest("A company with the same ISIN already exists.");
+
+            await _companyRepository.UpdateAsync(company);
+
+            return Ok();
+        }
+
+        private bool IsIsinValid(string isin)
+        {
+            return !string.IsNullOrWhiteSpace(isin) && isin.Length >= 2 && char.IsLetter(isin[0]) && char.IsLetter(isin[1]);
+        }
+
+        private bool IsIsinUnique(string isin)
+        {
+            return !_companyRepository.IsIsinUnique(isin).Result;
         }
     }
 }
