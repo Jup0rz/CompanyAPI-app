@@ -87,6 +87,17 @@ namespace CompanyAPI.Controllers
             return Ok();
         }
 
+        [HttpDelete("delete/{id}")]
+        public async Task<ActionResult> DeleteCompany(int id)
+        {
+            if (id <= 0)
+                return BadRequest("Valid Id is required.");
+
+            await _companyRepository.DeleteAsync(id);
+
+            return Ok();
+        }
+
         private static bool IsIsinValid(string isin)
         {
             return !string.IsNullOrWhiteSpace(isin) && isin.Length >= 2 && char.IsLetter(isin[0]) && char.IsLetter(isin[1]);
